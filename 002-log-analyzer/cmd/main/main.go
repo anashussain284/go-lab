@@ -58,5 +58,4 @@ func main() {
 	// fmt.Println(analytics)
 
 	result.PrintResult(analytics)
-
 }

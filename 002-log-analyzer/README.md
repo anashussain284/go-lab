@@ -13,6 +13,9 @@ This is a GO project for learning and practicing go functionalities for build pr
 	- Count number files analyzed
 	- Count number of directories analyzed
 
+### Phase - 2
+- Level wise log counting
+
 ## How to run it
 
 ```

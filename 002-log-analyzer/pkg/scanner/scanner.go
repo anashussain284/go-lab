@@ -8,11 +8,15 @@ import (
 	// "fmt"
 	"io/fs"
 	"path/filepath"
+	"strings"
 )
 
 type Analytics struct {
 	Files int
 	Lines int
+	Notice int
+	Warn int
+	Error int
 }
 
 func Scan(rootPath string) (Analytics, error) {
@@ -55,10 +59,26 @@ func analyzeFile(path string, analytics *Analytics) error {
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
-		// line := scanner.Text()
+		line := scanner.Text()
 
 		analytics.Lines ++
+
+		countByLevel(line, analytics)
 	}
 
 	return scanner.Err()
+}
+
+func countByLevel(line string, analytics *Analytics) {
+	if strings.Contains(line, "[notice]") {
+		analytics.Notice++
+	}
+
+	if strings.Contains(line, "[warn]") {
+		analytics.Warn++
+	}
+
+	if strings.Contains(line, "[error]") {
+		analytics.Error++
+	}
 }
