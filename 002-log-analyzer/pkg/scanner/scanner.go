@@ -2,11 +2,10 @@ package scanner
 
 import (
 	"bufio"
-	// "fmt"
+	"slices"
 	"os"
-	// "log"
-	// "fmt"
 	"io/fs"
+	"local/002-log-analyzer/pkg/parser"
 	"path/filepath"
 	"strings"
 	"time"
@@ -21,8 +20,7 @@ type Analytics struct {
 	Total int
 }
 
-// Scan now accepts optional from and to date pointers
-func Scan(rootPath string, fromDate *time.Time, toDate *time.Time, searchStr string) (Analytics, error) {
+func Scan(rootPath string, fromDate *time.Time, toDate *time.Time, searchStr string, levelStr string) (Analytics, error) {
 	analytics := Analytics {}
 
 	err := filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
@@ -40,7 +38,7 @@ func Scan(rootPath string, fromDate *time.Time, toDate *time.Time, searchStr str
 
 		analytics.Files++
 
-		return analyzeFile(path, &analytics, fromDate, toDate, searchStr)
+		return analyzeFile(path, &analytics, fromDate, toDate, searchStr, levelStr)
 		// return nil
 	})
 
@@ -51,7 +49,7 @@ func Scan(rootPath string, fromDate *time.Time, toDate *time.Time, searchStr str
 	return analytics, nil
 }
 
-func analyzeFile(path string, analytics *Analytics, from *time.Time, to *time.Time, search string) error {
+func analyzeFile(path string, analytics *Analytics, from *time.Time, to *time.Time, search string, level string) error {
 	file, err := os.Open(path)
 
 	if err != nil {
@@ -65,9 +63,7 @@ func analyzeFile(path string, analytics *Analytics, from *time.Time, to *time.Ti
 		line := scanner.Text()
 
 		// Extract date from log line
-		logDate, ok := extractDateFromLine(line)
-
-		// fmt.Printf("logDate: %v and ok: %v\n", logDate, ok)
+		logDate, ok := parser.ExtractDateFromLine(line)
 
 		// Skip date checks if the line does not contain a valid date timestamp
 		if ok {
@@ -83,7 +79,8 @@ func analyzeFile(path string, analytics *Analytics, from *time.Time, to *time.Ti
 
 		// Count line & log level if it passed the date filter
 		analytics.Lines ++
-		countByLevel(line, analytics)
+		selectedLogLevel := parser.LogLevelParser(level)
+		countByLevel(line, analytics, selectedLogLevel)
 	}
 
 	return scanner.Err()
@@ -103,8 +100,6 @@ func withinDateRange(logDate time.Time, from *time.Time, to *time.Time) bool {
 	// Truncate time portion from logDate to compare purely by calendar date (YYYY-MM-DD)
 	logDay := time.Date(logDate.Year(), logDate.Month(), logDate.Day(), 0, 0, 0, 0, logDate.Location())
 
-	// fmt.Printf("logDay: %v\n", logDay)
-
 	if from != nil && logDay.Before(*from) {
 		return false
 	}
@@ -119,45 +114,35 @@ func withinDateRange(logDate time.Time, from *time.Time, to *time.Time) bool {
 	return true
 }
 
-// Helper to extract date timestamp from a standard log line
-func extractDateFromLine(line string) (time.Time, bool) {
-	// Find opening '[' and closing ']' for timestamp bracket
-	startIdx := strings.Index(line, "[")
-	endIdx := strings.Index(line, "]")
-
-	// fmt.Printf("startIdx: %v and endIdx: %v\n", startIdx, endIdx)
-
-	if startIdx == -1 || endIdx == -1 || startIdx >= endIdx {
-		return time.Time{}, false
-	}
-
-	// Extract content inside brackets: "Thu Jun 01 06:07:04 2005"
-	rawTimestamp := line[startIdx+1 : endIdx]
-	// fmt.Printf("rawTimestamp: %v\n", rawTimestamp)
-
-	// Go reference layout for "Day Mon DD HH:MM:SS YYYY"
-	layout := "Mon Jan 02 15:04:05 2006"
-
-	t, err := time.Parse(layout, rawTimestamp)
-	if err != nil {
-		return time.Time{}, false
-	}
-	// fmt.Printf("t from log file: %v\n", t)
-
-	return t, true
-}
-
-func countByLevel(line string, analytics *Analytics) {
+func countByLevel(line string, analytics *Analytics, allowedLevels []string) {
+	// 1. Identify which level this line actually contains
+	lineLevel := ""
 	if strings.Contains(line, "[notice]") {
-		analytics.Notice++
+		lineLevel = "[notice]"
+	} else if strings.Contains(line, "[warn]") {
+		lineLevel = "[warn]"
+	} else if strings.Contains(line, "[error]") {
+		lineLevel = "[error]"
 	}
 
-	if strings.Contains(line, "[warn]") {
-		analytics.Warn++
+	// If the line has no recognized log level tag, return early
+	if lineLevel == "" {
+		return
 	}
 
-	if strings.Contains(line, "[error]") {
-		analytics.Error++
+	// 2. Filter: Check if the line's level is in the allowed levels list
+	if !slices.Contains(allowedLevels, lineLevel) {
+		return
+	}
+
+	// 3. Increment specific analytics counters based on the line's level
+	switch lineLevel {
+		case "[notice]":
+			analytics.Notice++
+		case "[warn]":
+			analytics.Warn++
+		case "[error]":
+			analytics.Error++
 	}
 
 	analytics.Total++

@@ -39,6 +39,9 @@ This is a GO project for learning and practicing go functionalities for build pr
 - Aceept search keyword from CLI
 - Skip the line if search keyword is not found the line
 
+### Phase - 5
+- Aceept searchable level from CLI, this is optional and only accept following levels `INFO, WARN, ERROR` and default level is INFO
+
 ## How to run it
 
 ```
