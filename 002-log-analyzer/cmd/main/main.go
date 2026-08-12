@@ -15,8 +15,11 @@ func main() {
 	root := flag.String("root", "", "directory containing log files")
 	fromStr := flag.String("from", "", "analyze logs from this date (YYYY-MM-DD)")
 	toStr := flag.String("to", "", "analyze logs until this date (YYYY-MM-DD)")
+	searchStr := flag.String("search", "", "searchable keyword")
 
 	flag.Parse()
+
+	// fmt.Printf("searchStr: %v\n", *searchStr)
 
 	rootPath := *root
 
@@ -69,7 +72,7 @@ func main() {
 		log.Fatalf("error: 'from' date (%v) cannot be after 'to' date (%v)", *fromStr, *toStr)
 	}
 
-	analytics, err := scanner.Scan(rootPath, fromDate, toDate)
+	analytics, err := scanner.Scan(rootPath, fromDate, toDate, *searchStr)
 
 	if err != nil {
 		log.Fatal(err)

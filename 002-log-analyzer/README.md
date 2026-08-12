@@ -35,6 +35,10 @@ This is a GO project for learning and practicing go functionalities for build pr
 		- If above function return false skip the line else analyze it
 - Analyze the line and take count
 
+### Phase - 4
+- Aceept search keyword from CLI
+- Skip the line if search keyword is not found the line
+
 ## How to run it
 
 ```

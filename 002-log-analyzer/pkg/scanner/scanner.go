@@ -22,7 +22,7 @@ type Analytics struct {
 }
 
 // Scan now accepts optional from and to date pointers
-func Scan(rootPath string, fromDate *time.Time, toDate *time.Time) (Analytics, error) {
+func Scan(rootPath string, fromDate *time.Time, toDate *time.Time, searchStr string) (Analytics, error) {
 	analytics := Analytics {}
 
 	err := filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
@@ -40,7 +40,7 @@ func Scan(rootPath string, fromDate *time.Time, toDate *time.Time) (Analytics, e
 
 		analytics.Files++
 
-		return analyzeFile(path, &analytics, fromDate, toDate)
+		return analyzeFile(path, &analytics, fromDate, toDate, searchStr)
 		// return nil
 	})
 
@@ -51,7 +51,7 @@ func Scan(rootPath string, fromDate *time.Time, toDate *time.Time) (Analytics, e
 	return analytics, nil
 }
 
-func analyzeFile(path string, analytics *Analytics, from *time.Time, to *time.Time) error {
+func analyzeFile(path string, analytics *Analytics, from *time.Time, to *time.Time, search string) error {
 	file, err := os.Open(path)
 
 	if err != nil {
@@ -77,12 +77,25 @@ func analyzeFile(path string, analytics *Analytics, from *time.Time, to *time.Ti
 			}
 		}
 
+		if !withinString(line, search) {
+			continue
+		}
+
 		// Count line & log level if it passed the date filter
 		analytics.Lines ++
 		countByLevel(line, analytics)
 	}
 
 	return scanner.Err()
+}
+
+
+func withinString(line string, search string) bool {
+	if strings.Contains(line, search) {
+		return true
+	}
+
+	return false
 }
 
 // Helper to check if a log date falls inside [from, to] inclusive
