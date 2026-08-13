@@ -49,8 +49,14 @@ This is a GO project for learning and practicing go functionalities for build pr
 	- sort the slice use `sort.SliceStable(keys, func(i, j int) bool)`, use this function sort the map values
 	- print only 5 key:values of map, which mean top errors
 
+### Phase - 7 : save the report into a file
+- use `func Create(name string) (*File, error)` to create a file and defer Close file
+- use `func NewWriter(w io.Writer) *Writer` to setup bufferedFile for save the item into memory
+- use `func MultiWriter(writers ...Writer) Writer` to create duplicate writer to handle write the report into terminal and file simultaneously
+- use `func Fprintln(w io.Writer, a ...any) (n int, err error)` use to write the report
+
 ## How to run it
 
 ```
-run go ./cmd/main/main.go "root path"
+go run ./cmd/main/main.go --root /var/www/html --from 2026-08-01 --to 2026-08-01 --search "database connection" --level INFO
 ```

@@ -1,28 +1,44 @@
 package result
 
 import (
-	"os"
+	"bufio"
 	"fmt"
-	"sort"
+	"io"
 	"local/002-log-analyzer/pkg/scanner"
+	"log"
+	"os"
+	"sort"
 )
 
 func PrintResult(analytics scanner.Analytics, rootPath string) {
-	fmt.Println("Log Analytics Report")
-	fmt.Println("--------------------")
-	fmt.Printf("Dir:\t%v\n", rootPath)
-	fmt.Printf("Files analyzed: %v\n", analytics.Files)
-	fmt.Printf("Lines analyzed: %v\n\n", analytics.Lines)
-	fmt.Printf("INFO: \t%v\n", analytics.Notice)
-	fmt.Printf("WARN: \t%v\n", analytics.Warn)
-	fmt.Printf("ERROR: \t%v\n\n", analytics.Error)
-	fmt.Printf("Total: \t%v\n", analytics.Total)
-	fmt.Println()
+	file, err := os.Create("report.txt")
 
-	topErrors(&analytics)
+	if err != nil {
+		log.Fatalf("error: create file, %v", err)
+	}
+	defer file.Close()
+
+	bufferedFile := bufio.NewWriter(file)
+	defer bufferedFile.Flush()
+
+	w := io.MultiWriter(os.Stdout, bufferedFile)
+
+	fmt.Printf("==%T==\n", w)
+
+	fmt.Fprintln(w, "Log Analytics Report")
+	fmt.Fprintln(w, "--------------------")
+	fmt.Fprintf(w, "Dir:\t%v\n", rootPath)
+	fmt.Fprintf(w, "Files analyzed: %v\n", analytics.Files)
+	fmt.Fprintf(w, "Lines analyzed: %v\n\n", analytics.Lines)
+	fmt.Fprintf(w, "INFO: \t%v\n", analytics.Notice)
+	fmt.Fprintf(w, "WARN: \t%v\n", analytics.Warn)
+	fmt.Fprintf(w, "ERROR: \t%v\n\n", analytics.Error)
+	fmt.Fprintf(w, "Total: \t%v\n\n", analytics.Total)
+
+	topErrors(&analytics, w)
 }
 
-func topErrors(analytics *scanner.Analytics) {
+func topErrors(analytics *scanner.Analytics, w io.Writer) {
 	allErrors := analytics.TopErrors
 
 	keys := make([]string, 0, len(allErrors))
@@ -42,6 +58,6 @@ func topErrors(analytics *scanner.Analytics) {
 	topKeys := keys[:limit]
 
 	for _, k := range topKeys {
-		fmt.Printf("(%d):\t%v\n",allErrors[k], k)
+		fmt.Fprintf(w, "(%d):\t%v\n", allErrors[k], k)
 	}
 }

@@ -2,28 +2,27 @@ package scanner
 
 import (
 	"bufio"
-	"slices"
-	"os"
 	"io/fs"
 	"local/002-log-analyzer/pkg/parser"
+	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
-	// "fmt"
 )
 
 type Analytics struct {
-	Files int
-	Lines int
-	Notice int
-	Warn int
-	Error int
-	Total int
+	Files     int
+	Lines     int
+	Notice    int
+	Warn      int
+	Error     int
+	Total     int
 	TopErrors map[string]int
 }
 
 func Scan(rootPath string, fromDate *time.Time, toDate *time.Time, searchStr string, levelStr string) (Analytics, error) {
-	analytics := Analytics {
+	analytics := Analytics{
 		TopErrors: make(map[string]int),
 	}
 
@@ -43,7 +42,6 @@ func Scan(rootPath string, fromDate *time.Time, toDate *time.Time, searchStr str
 		analytics.Files++
 
 		return analyzeFile(path, &analytics, fromDate, toDate, searchStr, levelStr)
-		// return nil
 	})
 
 	if err != nil {
@@ -82,7 +80,7 @@ func analyzeFile(path string, analytics *Analytics, from *time.Time, to *time.Ti
 		}
 
 		// Count line & log level if it passed the date filter
-		analytics.Lines ++
+		analytics.Lines++
 		selectedLogLevel := parser.LogLevelParser(level)
 		countByLevel(line, analytics, selectedLogLevel)
 
@@ -95,7 +93,7 @@ func analyzeFile(path string, analytics *Analytics, from *time.Time, to *time.Ti
 	return scanner.Err()
 }
 
-func catchTopErrors(analytics *Analytics,line string) {
+func catchTopErrors(analytics *Analytics, line string) {
 	errorKeyword := "[error]"
 	idx := strings.Index(line, errorKeyword)
 
@@ -158,13 +156,13 @@ func countByLevel(line string, analytics *Analytics, allowedLevels []string) {
 
 	// 3. Increment specific analytics counters based on the line's level
 	switch lineLevel {
-		case "[notice]":
-			analytics.Notice++
-		case "[warn]":
-			analytics.Warn++
-		case "[error]":
-			analytics.Error++
-			catchTopErrors(analytics, line)
+	case "[notice]":
+		analytics.Notice++
+	case "[warn]":
+		analytics.Warn++
+	case "[error]":
+		analytics.Error++
+		catchTopErrors(analytics, line)
 	}
 
 	analytics.Total++
