@@ -1,21 +1,21 @@
 package parser
 
 import (
-	"time"
 	"strings"
+	"time"
 )
 
-func LogLevelParser(level string) []string {
-	defaultLevel := []string{"[notice]","[warn]","[error]"}
+func ChosenLogLevels(level string) []string {
+	defaultLevel := []string{"[notice]", "[warn]", "[error]"}
 	switch level {
-		case "INFO":
-			return defaultLevel
-		case "WARN":
-			return []string{"[warn]","[error]"}
-		case "ERROR":
-			return []string{"[error]"}
-		default:
-			return defaultLevel
+	case "NOTICE":
+		return defaultLevel
+	case "WARN":
+		return []string{"[warn]", "[error]"}
+	case "ERROR":
+		return []string{"[error]"}
+	default:
+		return defaultLevel
 	}
 }
 

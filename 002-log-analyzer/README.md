@@ -55,6 +55,12 @@ This is a GO project for learning and practicing go functionalities for build pr
 - use `func MultiWriter(writers ...Writer) Writer` to create duplicate writer to handle write the report into terminal and file simultaneously
 - use `func Fprintln(w io.Writer, a ...any) (n int, err error)` use to write the report
 
+### Phase - 8 : refactoring
+- Count every scanned line
+- Loglevel parser name change to bettern understanding
+- Don't calculate allotted level for each line, change it only for one time
+- Change log level name INFO to NOTICE
+
 ## How to run it
 
 ```

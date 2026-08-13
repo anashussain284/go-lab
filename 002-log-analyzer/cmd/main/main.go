@@ -16,7 +16,7 @@ func main() {
 	fromStr := flag.String("from", "", "analyze logs from this date (YYYY-MM-DD)")
 	toStr := flag.String("to", "", "analyze logs until this date (YYYY-MM-DD)")
 	searchStr := flag.String("search", "", "search text inside log entries")
-	levelStr := flag.String("level", "", "filter by level: INFO, WARN, ERROR")
+	levelStr := flag.String("level", "", "filter by level: NOTICE, WARN, ERROR")
 
 	flag.Parse()
 
@@ -73,15 +73,15 @@ func main() {
 	level := *levelStr
 
 	if level != "" {
-		logLevelSlice := []string{"INFO", "WARN", "ERROR"}
+		logLevelSlice := []string{"NOTICE", "WARN", "ERROR"}
 		hasLevel := slices.Contains(logLevelSlice, level)
 
 		if !hasLevel {
-			log.Fatalf("error: 'invalid level' (%v), expected 'INFO' or 'WARN' or 'ERROR'", level)
+			log.Fatalf("error: 'invalid level' (%v), expected 'NOTICE' or 'WARN' or 'ERROR'", level)
 		}
 	}
 
-	analytics, err := scanner.Scan(rootPath, fromDate, toDate, *searchStr, level)
+	analytics, err := scanner.ScanDirectory(rootPath, fromDate, toDate, *searchStr, level)
 
 	if err != nil {
 		log.Fatal(err)

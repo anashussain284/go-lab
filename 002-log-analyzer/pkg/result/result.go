@@ -23,8 +23,6 @@ func PrintResult(analytics scanner.Analytics, rootPath string) {
 
 	w := io.MultiWriter(os.Stdout, bufferedFile)
 
-	fmt.Printf("==%T==\n", w)
-
 	fmt.Fprintln(w, "Log Analytics Report")
 	fmt.Fprintln(w, "--------------------")
 	fmt.Fprintf(w, "Dir:\t%v\n", rootPath)
@@ -51,7 +49,7 @@ func topErrors(analytics *scanner.Analytics, w io.Writer) {
 		return allErrors[keys[i]] > allErrors[keys[j]]
 	})
 
-	fmt.Printf("Top Errors: \n")
+	fmt.Fprintf(w, "Top Errors: \n")
 
 	limit := min(5, len(keys))
 

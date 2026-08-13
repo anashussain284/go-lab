@@ -21,7 +21,7 @@ type Analytics struct {
 	TopErrors map[string]int
 }
 
-func Scan(rootPath string, fromDate *time.Time, toDate *time.Time, searchStr string, levelStr string) (Analytics, error) {
+func ScanDirectory(rootPath string, fromDate *time.Time, toDate *time.Time, searchStr string, levelStr string) (Analytics, error) {
 	analytics := Analytics{
 		TopErrors: make(map[string]int),
 	}
@@ -59,10 +59,14 @@ func analyzeFile(path string, analytics *Analytics, from *time.Time, to *time.Ti
 	}
 	defer file.Close()
 
+	selectedLogLevel := parser.ChosenLogLevels(level)
+
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
 		line := scanner.Text()
+
+		analytics.Lines++
 
 		// Extract date from log line
 		logDate, ok := parser.ExtractDateFromLine(line)
@@ -79,15 +83,7 @@ func analyzeFile(path string, analytics *Analytics, from *time.Time, to *time.Ti
 			continue
 		}
 
-		// Count line & log level if it passed the date filter
-		analytics.Lines++
-		selectedLogLevel := parser.LogLevelParser(level)
 		countByLevel(line, analytics, selectedLogLevel)
-
-		// if strings.Contains(line, "[error]") {
-		// 	catchTopErrors(analytics, line)
-		// }
-
 	}
 
 	return scanner.Err()
