@@ -9,7 +9,19 @@ import (
 	"os"
 	"slices"
 	"time"
+	"fmt"
+	// "sort"
 )
+
+func main2() {
+	data := []byte("Hello, Go!\nThis is a quick way to write files.")
+	err := os.WriteFile("output.txt", data, 644)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("File writed successfull")
+}
 
 func main() {
 	root := flag.String("root", "", "directory containing log files")

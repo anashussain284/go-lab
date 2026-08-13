@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	// "fmt"
 )
 
 type Analytics struct {
@@ -18,10 +19,13 @@ type Analytics struct {
 	Warn int
 	Error int
 	Total int
+	TopErrors map[string]int
 }
 
 func Scan(rootPath string, fromDate *time.Time, toDate *time.Time, searchStr string, levelStr string) (Analytics, error) {
-	analytics := Analytics {}
+	analytics := Analytics {
+		TopErrors: make(map[string]int),
+	}
 
 	err := filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -81,11 +85,28 @@ func analyzeFile(path string, analytics *Analytics, from *time.Time, to *time.Ti
 		analytics.Lines ++
 		selectedLogLevel := parser.LogLevelParser(level)
 		countByLevel(line, analytics, selectedLogLevel)
+
+		// if strings.Contains(line, "[error]") {
+		// 	catchTopErrors(analytics, line)
+		// }
+
 	}
 
 	return scanner.Err()
 }
 
+func catchTopErrors(analytics *Analytics,line string) {
+	errorKeyword := "[error]"
+	idx := strings.Index(line, errorKeyword)
+
+	if idx == -1 {
+		return
+	}
+
+	errorMessage := strings.TrimSpace(line[idx+len(errorKeyword):])
+
+	analytics.TopErrors[errorMessage]++
+}
 
 func withinString(line string, search string) bool {
 	if strings.Contains(line, search) {
@@ -143,6 +164,7 @@ func countByLevel(line string, analytics *Analytics, allowedLevels []string) {
 			analytics.Warn++
 		case "[error]":
 			analytics.Error++
+			catchTopErrors(analytics, line)
 	}
 
 	analytics.Total++

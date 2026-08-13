@@ -42,6 +42,13 @@ This is a GO project for learning and practicing go functionalities for build pr
 ### Phase - 5
 - Aceept searchable level from CLI, this is optional and only accept following levels `INFO, WARN, ERROR` and default level is INFO
 
+### Phase - 6 : print top errors
+- Store errors and count into a map
+	- create a empty slice with 0 length and len(map) capacity
+	- append all keys of map intot the newly created slice
+	- sort the slice use `sort.SliceStable(keys, func(i, j int) bool)`, use this function sort the map values
+	- print only 5 key:values of map, which mean top errors
+
 ## How to run it
 
 ```
