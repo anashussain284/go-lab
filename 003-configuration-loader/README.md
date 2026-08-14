@@ -11,7 +11,11 @@ The project is Configuration Loader, It is for learning and practicing go functi
 
 ### Phase - 2
 - Accept config file from CLI
-- Read and assign the config-value to the config-key if config-value not empty
+- Read and assign config-value to the config-key if config-value not empty
+
+### Phase - 3
+- Convert string to int use `strconv.Atoi()` package
+- Convert string to bool use `strconv.ParseBool()` package
 
 ## How to run it
 

@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
 func main() {
 	HOST := "localhost"
-	PORT := "8080"
-	DEBUG := "false"
+	PORT := 8080
+	DEBUG := false
 
 	filePath := os.Args[1]
 
@@ -46,7 +47,12 @@ func main() {
 			searchValue := strings.TrimSpace(line[index+(len(searchKey))+1:])
 
 			if searchValue != "" {
-				PORT = searchValue
+				port, err := strconv.Atoi(searchValue)
+
+				if err != nil {
+					log.Fatalf("Error: string to int conversion: %v", err)
+				}
+				PORT = port
 			}
 
 		} else if strings.Contains(line, "DEBUG") {
@@ -55,7 +61,13 @@ func main() {
 			searchValue := strings.TrimSpace(line[index+(len(searchKey))+1:])
 
 			if searchValue != "" {
-				DEBUG = searchValue
+				debug, err := strconv.ParseBool(searchValue)
+
+				if err != nil {
+					log.Fatalf("Error: string to bool conversion: %v", err)
+				}
+
+				DEBUG = debug
 			}
 		}
 	}
@@ -67,7 +79,7 @@ func main() {
 	}
 
 	fmt.Printf("Configuration Loaded:\n\n")
-	fmt.Printf("HOST: %v\n", HOST)
-	fmt.Printf("PORT: %v\n", PORT)
-	fmt.Printf("DEBUG: %v\n", DEBUG)
+	fmt.Printf("Type: %T, HOST: %v\n", HOST, HOST)
+	fmt.Printf("Type: %T, PORT: %v\n", PORT, PORT)
+	fmt.Printf("Type: %T, DEBUG: %v\n", DEBUG, DEBUG)
 }
