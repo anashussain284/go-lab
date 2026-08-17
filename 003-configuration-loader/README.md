@@ -21,6 +21,10 @@ The project is Configuration Loader, It is for learning and practicing go functi
 - Validate PORT (must be integer between 1 and 65535)
 - Validate DEBUG (must be bool)
 
+### Phase - 5 (Refactoring)
+- Remove redundant file validations and checking
+- Change data type to store config values for easy maintain
+
 ## How to run it
 
 ```

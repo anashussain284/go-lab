@@ -2,32 +2,14 @@ package validator
 
 import (
 	"errors"
+	"local/003-configuration-loader/pkg/config"
+	"slices"
 	"strconv"
 	"strings"
 )
 
-func ValidateDebug(line string) (bool, error) {
-	searchKey := "DEBUG"
-
-	index := strings.Index(line, searchKey)
-
-	if index == -1 {
-		return false, errors.New("DEBUG not found in config file")
-	}
-
-	valueStart := index + (len(searchKey)) + 1
-
-	if valueStart > len(line) {
-		return false, errors.New("DEBUG config is malformed or missing a value separator")
-	}
-
-	searchValue := strings.TrimSpace(line[valueStart:])
-
-	if searchValue == "" {
-		return false, errors.New("DEBUG cannot be empty in config file")
-	}
-
-	debug, err := strconv.ParseBool(searchValue)
+func ValidateDebug(debugStr string) (bool, error) {
+	debug, err := strconv.ParseBool(debugStr)
 
 	if err != nil {
 		return false, errors.New("DEBUG must be boolean value")
@@ -36,30 +18,11 @@ func ValidateDebug(line string) (bool, error) {
 	return debug, nil
 }
 
-func ValidatePort(line string) (int, error) {
-	searchKey := "PORT"
-	index := strings.Index(line, searchKey)
-
-	if index == -1 {
-		return 0, errors.New("PORT not found in config file")
-	}
-
-	valueStart := index + (len(searchKey)) + 1
-
-	if valueStart > len(line) {
-		return 0, errors.New("PORT config is malformed or missing a value separator")
-	}
-
-	searchValue := strings.TrimSpace(line[valueStart:])
-
-	if searchValue == "" {
-		return 0, errors.New("PORT cannot be empty in config-file")
-	}
-
-	port, err := strconv.Atoi(searchValue)
+func ValidatePort(portStr string) (int, error) {
+	port, err := strconv.Atoi(portStr)
 
 	if err != nil {
-		return 0, err
+		return 0, errors.New("PORT must be integer value")
 	}
 
 	if port < 1 || port > 65535 {
@@ -69,41 +32,53 @@ func ValidatePort(line string) (int, error) {
 	return port, nil
 }
 
-func ValidateHost(line string) (string, error) {
-	searchKey := "HOST"
-	index := strings.Index(line, searchKey)
-
-	if index == -1 {
-		return "", errors.New("HOST not found in config file")
-	}
-
-	valueStart := index + index + (len(searchKey)) + 1
-
-	if valueStart > len(line) {
-		return "", errors.New("HOST config is malformed or missing a value separator")
-	}
-
-	searchValue := strings.TrimSpace(line[valueStart:])
-
-	if searchValue == "" {
-		return "", errors.New("HOST cannot be empty in config-file")
-	}
-
-	return searchValue, nil
-}
-
-func ValidateLine(line string) (bool, error) {
-	if !strings.Contains(line, "=") {
-		return false, errors.New("Invalid value assigning")
+func RetrieveKeyValue(line string, config *config.Configuration) (config.Configuration, error) {
+	if line == "" {
+		return *config, errors.New("Empty line contained config file not accept")
 	}
 
 	equalIndex := strings.Index(line, "=")
-	beforeEqual := line[:equalIndex]
-	lenBeforeEqual := len(beforeEqual)
 
-	if equalIndex < 0 || lenBeforeEqual < 1 {
-		return false, errors.New("Invalid equal position")
+	if equalIndex == -1 {
+		return *config, errors.New("Key:Value seperator (=) not found")
 	}
 
-	return true, nil
+	expectedKey := line[0:equalIndex]
+	expectedValue := line[equalIndex+1:]
+
+	whitelistedKeys := []string{"HOST", "PORT", "DEBUG"}
+	hasKey := slices.Contains(whitelistedKeys, expectedKey)
+
+	if !hasKey {
+		return *config, errors.New("Whitelisted key not found")
+	}
+
+	hasWhiteSpaceInValue := strings.Contains(expectedValue, " ")
+
+	if expectedValue == "" {
+		return *config, errors.New("Value should not empty")
+	}
+
+	if hasWhiteSpaceInValue {
+		return *config, errors.New("Value should not contain whitespace")
+	}
+
+	switch expectedKey {
+	case "HOST":
+		config.Host = expectedValue
+	case "PORT":
+		port, err := ValidatePort(expectedValue)
+		if err != nil {
+			return *config, err
+		}
+		config.Port = port
+	case "DEBUG":
+		debug, err := ValidateDebug(expectedValue)
+		if err != nil {
+			return *config, err
+		}
+		config.Debug = debug
+	}
+
+	return *config, nil
 }

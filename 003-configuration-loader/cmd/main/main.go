@@ -3,18 +3,34 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"local/003-configuration-loader/pkg/config"
 	"local/003-configuration-loader/pkg/validator"
 	"log"
 	"os"
-	"strings"
+	"path/filepath"
 )
 
 func main() {
-	HOST := "localhost"
-	PORT := 8080
-	DEBUG := false
+
+	if len(os.Args) != 2 {
+		log.Fatalf("Error: application require a .env file path")
+	}
 
 	filePath := os.Args[1]
+
+	fileInfo, err := os.Stat(filePath)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if fileInfo.IsDir() {
+		log.Fatalf("Error: application not accept directory")
+	}
+
+	if filepath.Ext(filePath) != ".env" {
+		log.Fatalf("Error: application only accept .env file")
+	}
 
 	file, err := os.Open(filePath)
 
@@ -23,51 +39,25 @@ func main() {
 	}
 	defer file.Close()
 
+	cfg := config.Configuration{
+		Host:  "localhost",
+		Port:  8080,
+		Debug: true,
+	}
+
+	var configuration config.Configuration
+
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		isLineValid, err := validator.ValidateLine(line)
+		configuration, err = validator.RetrieveKeyValue(line, &cfg)
 
 		if err != nil {
-			log.Fatalf("Error: LINE validation: %v\n", err)
+			log.Fatal(err)
 		}
 
-		if !isLineValid {
-			log.Fatalf("Error: Invalid value assigning")
-		}
-
-		if strings.Contains(line, "HOST") {
-			host, err := validator.ValidateHost(line)
-
-			if err != nil {
-				log.Fatalf("Error: HOST validation: %v\n", err)
-			}
-
-			HOST = host
-		} else if strings.Contains(line, "PORT") {
-
-			port, err := validator.ValidatePort(line)
-
-			if err != nil {
-				log.Fatalf("Error: PORT validation: %v\n", err)
-			}
-
-			PORT = port
-
-		} else if strings.Contains(line, "DEBUG") {
-
-			// fmt.Printf("line: %v\n", line)
-
-			debug, err := validator.ValidateDebug(line)
-
-			if err != nil {
-				log.Fatalf("Error: DEBUG validation: %v\n", err)
-			}
-
-			DEBUG = debug
-		}
 	}
 
 	err = scanner.Err()
@@ -77,7 +67,7 @@ func main() {
 	}
 
 	fmt.Printf("Configuration Loaded:\n\n")
-	fmt.Printf("Type: %T, HOST: %v\n", HOST, HOST)
-	fmt.Printf("Type: %T, PORT: %v\n", PORT, PORT)
-	fmt.Printf("Type: %T, DEBUG: %v\n", DEBUG, DEBUG)
+	fmt.Printf("HOST:\t%v\n", configuration.Host)
+	fmt.Printf("PORT:\t%v\n", configuration.Port)
+	fmt.Printf("DEBUG:\t%v\n", configuration.Debug)
 }
