@@ -28,6 +28,16 @@ func main() {
 	for scanner.Scan() {
 		line := scanner.Text()
 
+		isLineValid, err := validator.ValidateLine(line)
+
+		if err != nil {
+			log.Fatalf("Error: LINE validation: %v\n", err)
+		}
+
+		if !isLineValid {
+			log.Fatalf("Error: Invalid value assigning")
+		}
+
 		if strings.Contains(line, "HOST") {
 			host, err := validator.ValidateHost(line)
 

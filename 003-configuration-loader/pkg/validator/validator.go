@@ -91,3 +91,19 @@ func ValidateHost(line string) (string, error) {
 
 	return searchValue, nil
 }
+
+func ValidateLine(line string) (bool, error) {
+	if !strings.Contains(line, "=") {
+		return false, errors.New("Invalid value assigning")
+	}
+
+	equalIndex := strings.Index(line, "=")
+	beforeEqual := line[:equalIndex]
+	lenBeforeEqual := len(beforeEqual)
+
+	if equalIndex < 0 || lenBeforeEqual < 1 {
+		return false, errors.New("Invalid equal position")
+	}
+
+	return true, nil
+}
