@@ -39,20 +39,20 @@ func main() {
 	}
 	defer file.Close()
 
-	cfg := config.Configuration{
+	configuration := config.Configuration{
 		Host:  "localhost",
 		Port:  8080,
 		Debug: true,
 	}
 
-	var configuration config.Configuration
+	// var configuration config.Configuration
 
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		configuration, err = validator.RetrieveKeyValue(line, &cfg)
+		err = validator.RetrieveKeyValue(line, &configuration)
 
 		if err != nil {
 			log.Fatal(err)

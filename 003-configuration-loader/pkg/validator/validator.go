@@ -32,53 +32,58 @@ func ValidatePort(portStr string) (int, error) {
 	return port, nil
 }
 
-func RetrieveKeyValue(line string, config *config.Configuration) (config.Configuration, error) {
+func RetrieveKeyValue(line string, configuration *config.Configuration) error {
 	if line == "" {
-		return *config, errors.New("Empty line contained config file not accept")
+		return errors.New("Empty line contained config file not accept")
 	}
 
 	equalIndex := strings.Index(line, "=")
 
 	if equalIndex == -1 {
-		return *config, errors.New("Key:Value seperator (=) not found")
+		return errors.New("Key:Value seperator (=) not found")
 	}
 
 	expectedKey := line[0:equalIndex]
+
+	if expectedKey == "" {
+		return errors.New("Key should not empty")
+	}
+
 	expectedValue := line[equalIndex+1:]
 
 	whitelistedKeys := []string{"HOST", "PORT", "DEBUG"}
 	hasKey := slices.Contains(whitelistedKeys, expectedKey)
 
 	if !hasKey {
-		return *config, errors.New("Whitelisted key not found")
+		return errors.New("Whitelisted key not found")
+	}
+
+	if expectedValue == "" {
+		return errors.New("Value should not empty")
 	}
 
 	hasWhiteSpaceInValue := strings.Contains(expectedValue, " ")
 
-	if expectedValue == "" {
-		return *config, errors.New("Value should not empty")
-	}
-
 	if hasWhiteSpaceInValue {
-		return *config, errors.New("Value should not contain whitespace")
+		expectedValue = strings.TrimSpace(expectedValue)
 	}
 
 	switch expectedKey {
 	case "HOST":
-		config.Host = expectedValue
+		configuration.Host = expectedValue
 	case "PORT":
 		port, err := ValidatePort(expectedValue)
 		if err != nil {
-			return *config, err
+			return err
 		}
-		config.Port = port
+		configuration.Port = port
 	case "DEBUG":
 		debug, err := ValidateDebug(expectedValue)
 		if err != nil {
-			return *config, err
+			return err
 		}
-		config.Debug = debug
+		configuration.Debug = debug
 	}
 
-	return *config, nil
+	return nil
 }
