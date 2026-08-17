@@ -16,6 +16,10 @@ The project is Configuration Loader, It is for learning and practicing go functi
 ### Phase - 3
 - Convert string to int use `strconv.Atoi()` package
 - Convert string to bool use `strconv.ParseBool()` package
+### Phase - 4
+- Validate HOST
+- Validate PORT (must be integer between 1 and 65535)
+- Validate DEBUG (must be bool)
 
 ## How to run it
 

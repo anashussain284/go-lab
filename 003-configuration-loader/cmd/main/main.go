@@ -3,9 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"local/003-configuration-loader/pkg/validator"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -15,10 +15,6 @@ func main() {
 	DEBUG := false
 
 	filePath := os.Args[1]
-
-	// fmt.Println(filePath)
-
-	// fileContent, err := os.ReadFile(filePath)
 
 	file, err := os.Open(filePath)
 
@@ -33,42 +29,34 @@ func main() {
 		line := scanner.Text()
 
 		if strings.Contains(line, "HOST") {
-			searchKey := "HOST"
-			index := strings.Index(line, searchKey)
-			searchValue := strings.TrimSpace(line[index+(len(searchKey))+1:])
+			host, err := validator.ValidateHost(line)
 
-			if searchValue != "" {
-				HOST = searchValue
+			if err != nil {
+				log.Fatalf("Error: HOST validation: %v\n", err)
 			}
 
+			HOST = host
 		} else if strings.Contains(line, "PORT") {
-			searchKey := "PORT"
-			index := strings.Index(line, searchKey)
-			searchValue := strings.TrimSpace(line[index+(len(searchKey))+1:])
 
-			if searchValue != "" {
-				port, err := strconv.Atoi(searchValue)
+			port, err := validator.ValidatePort(line)
 
-				if err != nil {
-					log.Fatalf("Error: string to int conversion: %v", err)
-				}
-				PORT = port
+			if err != nil {
+				log.Fatalf("Error: PORT validation: %v\n", err)
 			}
+
+			PORT = port
 
 		} else if strings.Contains(line, "DEBUG") {
-			searchKey := "DEBUG"
-			index := strings.Index(line, searchKey)
-			searchValue := strings.TrimSpace(line[index+(len(searchKey))+1:])
 
-			if searchValue != "" {
-				debug, err := strconv.ParseBool(searchValue)
+			// fmt.Printf("line: %v\n", line)
 
-				if err != nil {
-					log.Fatalf("Error: string to bool conversion: %v", err)
-				}
+			debug, err := validator.ValidateDebug(line)
 
-				DEBUG = debug
+			if err != nil {
+				log.Fatalf("Error: DEBUG validation: %v\n", err)
 			}
+
+			DEBUG = debug
 		}
 	}
 
